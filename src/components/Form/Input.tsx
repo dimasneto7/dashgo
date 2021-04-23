@@ -8,10 +8,10 @@ import {
   InputProps as ChakraInputProps,
 } from "@chakra-ui/react"
 
-interface InputProps extends ChakraInputProps {
+type InputProps = ChakraInputProps & {
     name: string;
     label?: string;
-    error?:FieldError;
+    error?: FieldError;
 }
 
 const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> 

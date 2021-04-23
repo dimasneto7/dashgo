@@ -1,4 +1,4 @@
-import { createServer, Factory, Model, Response } from 'miragejs';
+import { createServer, Factory, Model, Response, ActiveModelSerializer } from 'miragejs';
 import faker from 'faker';
 
 type User = {
@@ -7,28 +7,32 @@ type User = {
     created_at: string;
 };
 
-export function makeServer() {
+function makeServer() {
     const server = createServer({
+        serializers: {
+            aplication: ActiveModelSerializer,
+        },
+
         models: {
             user: Model.extend<Partial<User>>({})
         },
 
         factories: {
             user: Factory.extend({
-                name(i: number) {
-                    return `User ${i + 1}`
-                },
-                email() {
-                    return faker.internet.email().toLowerCase();
-                },
-                createdAt() {
-                    return faker.date.recent(10);
-                },
-            })
+              name() {
+                return faker.name.findName();
+              },
+              email() {
+                return faker.internet.email().toLocaleLowerCase();
+              },
+              created_at() {
+                return faker.date.recent(10);
+              },
+            }),
         },
 
         seeds(server) {
-            server.createList('user', 200)
+            server.createList('user', 30)
         },
 
         routes() {
@@ -38,13 +42,18 @@ export function makeServer() {
             this.get('/users', function (schema, request) {
                 const { page = 1, per_page = 10 } = request.queryParams
 
+                const pageAsNumber = Number(page);
+                const perPageAsNumber = Number(per_page);
+
                 const total = schema.all('user').length
 
-                const pageStart = (Number(page) - 1) * Number(per_page);
-                const pageEnd = pageStart + Number(per_page);
+                const pageStart = (pageAsNumber - 1) * perPageAsNumber;
+                const pageEnd = pageStart + perPageAsNumber;
 
-                const users = this.serialize(schema.all('user'))
-                    .users.slice(pageStart, pageEnd)
+                const users = this.serialize(schema.all('user')).users.slice(
+                    pageStart,
+                    pageEnd,
+                  );
 
                 return new Response(
                     200,
@@ -53,14 +62,17 @@ export function makeServer() {
                 )
             });
 
+            this.get('/users/:id');
             this.post('/users');
 
             this.namespace = '';
             this.passthrough()
-        }
-    })
+        },
+    });
 
     return server;
 }
+
+export { makeServer };
 
 
