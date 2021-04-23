@@ -10,7 +10,7 @@ type User = {
 function makeServer() {
     const server = createServer({
         serializers: {
-            aplication: ActiveModelSerializer,
+            application: ActiveModelSerializer,
         },
 
         models: {
@@ -40,7 +40,7 @@ function makeServer() {
             this.timing = 750;
 
             this.get('/users', function (schema, request) {
-                const { page = 1, per_page = 10 } = request.queryParams
+                const { page = 1, per_page = 10 } = request.queryParams;
 
                 const pageAsNumber = Number(page);
                 const perPageAsNumber = Number(per_page);
